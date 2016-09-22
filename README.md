@@ -3,6 +3,8 @@ Manala
 
 [![Build Status](https://travis-ci.org/manala/manala.svg?branch=master)](https://travis-ci.org/manala/manala)
 
+This project helps to manage vagrant environments for PHP projects through the CLI.
+
 #### /!\ This project is still in progress, use it carefully.
 
 Installation
@@ -30,10 +32,15 @@ Usage
 $ manala setup ~/my-awesome-project
 ```
 
+At this point, your virtual machine is configured and ready to be provisionned.
+
 #### Build
 ```
 $ manala build ~/my-awesome-project
 ```
+
+Your vagrant box is up and provisionned through [manala ansible roles](https://github.com/manala?query=ansible-role).  
+Now, use the [vagrant CLI tools](https://www.vagrantup.com/docs/cli/) to manage it.
 
 License
 -------
