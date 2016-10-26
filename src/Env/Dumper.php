@@ -21,15 +21,35 @@ use Symfony\Component\Filesystem\Filesystem;
  */
 class Dumper
 {
+    const DUMP_METADATA = 1;
+    const DUMP_FILES = 2;
+    const DUMP_ALL = 3;
+
     /**
      * Creates and dumps final config files from stubs.
      *
      * @param Env    $env     The Env for which to dump the rendered config templates
      * @param string $workDir The manalized project directory
+     * @param int    $flags
      *
      * @return \Generator The dumped file paths
      */
-    public static function dump(Env $env, $workDir)
+    public static function dump(Env $env, $workDir, $flags = self::DUMP_ALL)
+    {
+        if (self::DUMP_FILES & $flags) {
+            // php >= 7.0:
+            // yield from self::dumpFiles($env, $workDir);
+            for ($generator = self::dumpFiles($env, $workDir); $generator->valid(); $generator->next()) {
+                yield $generator->current();
+            }
+        }
+
+        if (self::DUMP_METADATA & $flags) {
+            yield self::dumpMetadata($env, $workDir);
+        }
+    }
+
+    private static function dumpFiles(Env $env, $workDir)
     {
         foreach ($env->getConfigs() as $config) {
             $baseTarget = "$workDir/{$config->getPath()}";
@@ -45,15 +65,7 @@ class Dumper
         }
     }
 
-    /**
-     * Dumps the metadata into a file.
-     *
-     * @param Env    $env     The Env for which to dump the metadata
-     * @param string $workDir The manalized project directory
-     *
-     * @return string The metadata file path
-     */
-    public static function dumpMetadata(Env $env, $workDir)
+    private static function dumpMetadata(Env $env, $workDir)
     {
         (new Filesystem())->dumpFile($target = "$workDir/ansible/.manalize", serialize($env));
 

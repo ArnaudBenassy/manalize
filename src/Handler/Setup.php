@@ -25,23 +25,37 @@ class Setup
     private $appName;
     private $envType;
     private $dependencies;
+    private $options;
 
-    public function __construct($cwd, AppName $appName, EnvEnum $envType, \Iterator $dependencies)
+    public function __construct($cwd, AppName $appName, EnvEnum $envType, \Iterator $dependencies, array $options = [])
     {
         $this->cwd = $cwd;
         $this->appName = $appName;
         $this->envType = $envType;
         $this->dependencies = $dependencies;
+        $this->options = $this->normalizeOptions($options);
     }
 
     public function handle(callable $notifier)
     {
         $env = EnvFactory::createEnv($this->envType, $this->appName, $this->dependencies);
 
-        foreach (Dumper::dump($env, $this->cwd) as $target) {
+        foreach (Dumper::dump($env, $this->cwd, $this->getDumperFlags()) as $target) {
             $notifier(str_replace($this->cwd.'/', '', $target));
         }
+    }
 
-        $notifier(str_replace($this->cwd.'/', '', Dumper::dumpMetadata($env, $this->cwd)));
+    private function normalizeOptions(array $options)
+    {
+        if (!isset($options['dumper_flags'])) {
+            $options['dumper_flags'] = Dumper::DUMP_ALL;
+        }
+
+        return $options;
+    }
+
+    private function getDumperFlags()
+    {
+        return $this->options['dumper_flags'];
     }
 }
